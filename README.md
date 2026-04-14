@@ -38,6 +38,18 @@ Stores customer reviews for a product. Each review has a rating, comment, and re
 Keeps track of changes that need to be synced to Elasticsearch. When a product is created or updated, a row is written here in the same database transaction. A background worker reads this table and pushes the changes to Elasticsearch. This ensures the search index never permanently drifts from the database.
 
 
+### Why not CDC
+
+Change Data Capture with Debezium and Kafka is the cleaner solution at scale. Debezium tails the MySQL binlog and publishes every change as an event to Kafka. A consumer picks it up and updates Elasticsearch. The application never has to think about syncing at all, and you can bolt on more consumers later without touching a line of app code.
+
+The reason we are not doing it here is that it would mean running Kafka, Zookeeper, and Debezium just to keep one search index in sync for a small shop API. The outbox gets the job done with a single table and a background worker, which is the right amount of complexity for the problem we actually have.
+
+### Outbox pattern
+
+The naive approach to keeping Elasticsearch in sync is to write to the database and then call Elasticsearch in the same request. The problem is that if the Elasticsearch call fails, you have no record that it failed and the search index silently falls behind.
+
+The outbox table solves this. When a product is created or updated, an outbox row is written in the same database transaction as the product change. A background worker then reads pending rows, pushes them to Elasticsearch, and marks them as sent. Because the outbox row is committed together with the product change, there is no window where a change can be lost. If the worker fails, the row stays pending and gets retried. The search index will always catch up eventually.
+
 ### Why some things are not separate tables
 
 **Tags** are stored as a JSON array on the product (e.g. `["mascara", "foundation"]`). They have no metadata, there is no API to manage them, and all tag-based filtering goes through Elasticsearch. A separate tags table would add complexity with no real benefit.
