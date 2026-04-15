@@ -17,6 +17,23 @@ services:
     volumes:
       - .:/app
 
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python worker.py
+    environment:
+      FLASK_ENV: development
+      DATABASE_URL: mysql+pymysql://converz_user:converz_password@mysql:3306/converz_shop
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    depends_on:
+      mysql:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - .:/app
+
   mysql:
     build:
       context: ./docker/mysql

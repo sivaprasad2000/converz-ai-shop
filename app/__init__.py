@@ -17,4 +17,7 @@ def create_app(config_name: str = "default") -> Flask:
     from app.routes import register_blueprints
     register_blueprints(app)
 
+    from app.cli import es_cli
+    app.cli.add_command(es_cli)
+
     return app
