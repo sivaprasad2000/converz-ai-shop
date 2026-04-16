@@ -12,7 +12,8 @@ def create_app(config_name: str = "default") -> Flask:
     db.init_app(app)
     migrate.init_app(app, db)
 
-    app.elasticsearch = Elasticsearch(app.config["ELASTICSEARCH_URL"])
+    es_url = app.config.get("ELASTICSEARCH_URL")
+    app.elasticsearch = Elasticsearch(es_url) if es_url else None
 
     from app.routes import register_blueprints
     register_blueprints(app)

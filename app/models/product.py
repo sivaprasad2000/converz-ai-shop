@@ -1,11 +1,11 @@
 import enum
 
-from sqlalchemy import DateTime, Index, JSON, Numeric, Text
-from sqlalchemy.dialects.mysql import BIGINT, INTEGER, VARCHAR
+from sqlalchemy import DateTime, ForeignKey, Index, JSON, Numeric, Text
+from sqlalchemy.dialects.mysql import INTEGER, VARCHAR
 from sqlalchemy.orm import relationship
 
 from app.extensions import db
-from app.models._common import _TABLE_OPTS, _utcnow, EnumType
+from app.models._common import _TABLE_OPTS, _utcnow, EnumType, UnsignedBigInt
 
 
 class AvailabilityStatus(enum.Enum):
@@ -26,7 +26,7 @@ class Product(db.Model):
         _TABLE_OPTS,
     )
 
-    id                    = db.Column(BIGINT(unsigned=True),  primary_key=True, autoincrement=True)
+    id                    = db.Column(UnsignedBigInt,          primary_key=True, autoincrement=True)
     sku                   = db.Column(VARCHAR(100),           nullable=False, unique=True)
     title                 = db.Column(VARCHAR(500),           nullable=False)
     description           = db.Column(Text,                   nullable=True)
@@ -51,8 +51,9 @@ class Product(db.Model):
     dimensions            = db.Column(JSON,                   nullable=True)
     # {"barcode": …, "qr_code": …, "created_at": …, "updated_at": …}
     meta                  = db.Column(JSON,                   nullable=True)
+    category_id           = db.Column(UnsignedBigInt,          ForeignKey("categories.id"), nullable=True)
     created_at            = db.Column(DateTime, nullable=False, default=_utcnow)
     updated_at            = db.Column(DateTime, nullable=False, default=_utcnow, onupdate=_utcnow)
 
-    categories = relationship("Category", secondary="product_categories", back_populates="products")
-    reviews    = relationship("Review",   back_populates="product", cascade="all, delete-orphan")
+    category = relationship("Category", back_populates="products")
+    reviews  = relationship("Review",   back_populates="product", cascade="all, delete-orphan")

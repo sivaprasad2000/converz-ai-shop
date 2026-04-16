@@ -1,11 +1,14 @@
 import enum
 from datetime import datetime, timezone
 
-from sqlalchemy import VARCHAR
+from sqlalchemy import Integer, VARCHAR
 from sqlalchemy.dialects.mysql import BIGINT
 from sqlalchemy.types import TypeDecorator
 
 from app.extensions import db
+
+# On MySQL: BIGINT UNSIGNED.  On SQLite: Integer → INTEGER (required for rowid auto-increment).
+UnsignedBigInt = Integer().with_variant(BIGINT(unsigned=True), "mysql")
 
 _TABLE_OPTS = {
     "mysql_engine": "InnoDB",

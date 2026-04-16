@@ -1,9 +1,9 @@
 from sqlalchemy import DateTime, Index, Text
-from sqlalchemy.dialects.mysql import BIGINT, SMALLINT, VARCHAR
+from sqlalchemy.dialects.mysql import SMALLINT, VARCHAR
 from sqlalchemy.orm import relationship
 
 from app.extensions import db
-from app.models._common import _TABLE_OPTS, _utcnow
+from app.models._common import _TABLE_OPTS, _utcnow, UnsignedBigInt
 
 
 class Review(db.Model):
@@ -14,8 +14,8 @@ class Review(db.Model):
         _TABLE_OPTS,
     )
 
-    id             = db.Column(BIGINT(unsigned=True),   primary_key=True, autoincrement=True)
-    product_id     = db.Column(BIGINT(unsigned=True),   db.ForeignKey("products.id"), nullable=False)
+    id             = db.Column(UnsignedBigInt, primary_key=True, autoincrement=True)
+    product_id     = db.Column(UnsignedBigInt, db.ForeignKey("products.id"), nullable=False)
     rating         = db.Column(SMALLINT(unsigned=True), nullable=False)  # 1–5
     comment        = db.Column(Text,                    nullable=True)
     reviewer_name  = db.Column(VARCHAR(300),            nullable=True)
