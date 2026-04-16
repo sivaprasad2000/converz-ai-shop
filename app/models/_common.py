@@ -1,14 +1,16 @@
 import enum
 from datetime import datetime, timezone
 
-from sqlalchemy import Integer, VARCHAR
-from sqlalchemy.dialects.mysql import BIGINT
+from sqlalchemy import Integer, SmallInteger, VARCHAR
+from sqlalchemy.dialects.mysql import BIGINT, TINYINT
 from sqlalchemy.types import TypeDecorator
 
 from app.extensions import db
 
-# On MySQL: BIGINT UNSIGNED.  On SQLite: Integer → INTEGER (required for rowid auto-increment).
-UnsignedBigInt = Integer().with_variant(BIGINT(unsigned=True), "mysql")
+# Cross-dialect unsigned integer types.
+# MySQL gets the native unsigned type; SQLite falls back to a generic type.
+UnsignedBigInt  = Integer()     .with_variant(BIGINT(unsigned=True),  "mysql")
+UnsignedTinyInt = SmallInteger().with_variant(TINYINT(unsigned=True), "mysql")
 
 _TABLE_OPTS = {
     "mysql_engine": "InnoDB",

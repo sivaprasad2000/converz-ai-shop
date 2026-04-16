@@ -1,10 +1,10 @@
 import enum
 
-from sqlalchemy import DateTime, Index, JSON, SmallInteger
+from sqlalchemy import DateTime, Index, JSON
 from sqlalchemy.dialects.mysql import VARCHAR
 
 from app.extensions import db
-from app.models._common import _TABLE_OPTS, _utcnow, EnumType, UnsignedBigInt
+from app.models._common import _TABLE_OPTS, _utcnow, EnumType, UnsignedBigInt, UnsignedTinyInt
 
 
 class OutboxStatus(enum.Enum):
@@ -25,6 +25,6 @@ class Outbox(db.Model):
     event_type   = db.Column(VARCHAR(100),           nullable=False)   # e.g. "product.created"
     payload      = db.Column(JSON,                   nullable=False)   # full ES document
     status       = db.Column(EnumType(OutboxStatus, length=10), nullable=False, default=OutboxStatus.PENDING)
-    attempts     = db.Column(SmallInteger,            nullable=False, default=0)
+    attempts     = db.Column(UnsignedTinyInt, nullable=False, default=0)
     created_at   = db.Column(DateTime, nullable=False, default=_utcnow)
     processed_at = db.Column(DateTime, nullable=True)
